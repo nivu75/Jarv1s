@@ -1,0 +1,445 @@
+<title>Audit Maison Savann</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: colonne de lecture unique 880px, sommaire sticky en haut, tableaux scrollables, un seul bloc coloré (verdict). */
+:root{
+  --bg:#F2F5F2; --surface:#FFFFFF; --fg:#13211C; --muted:#5A6B64; --line:#D5DDD8;
+  --jade:#0E6B55; --jade-soft:#DCEFE8; --roast:#8C4A1C; --roast-soft:#F3E3D5;
+  --warn:#A8550B; --warn-soft:#FBE9D2; --bad:#B3261E; --bad-soft:#F9DEDB; --ok:#1B7A46; --ok-soft:#DDF1E4;
+  --f-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1714; --surface:#16211D; --fg:#E6EEE9; --muted:#9BAEA6; --line:#2A3A34;
+  --jade:#4FC7A3; --jade-soft:#143328; --roast:#E0A070; --roast-soft:#2E2016;
+  --warn:#F0B062; --warn-soft:#33250F; --bad:#FF8A80; --bad-soft:#381A18; --ok:#6FD39A; --ok-soft:#143022; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1714; --surface:#16211D; --fg:#E6EEE9; --muted:#9BAEA6; --line:#2A3A34;
+  --jade:#4FC7A3; --jade-soft:#143328; --roast:#E0A070; --roast-soft:#2E2016;
+  --warn:#F0B062; --warn-soft:#33250F; --bad:#FF8A80; --bad-soft:#381A18; --ok:#6FD39A; --ok-soft:#143022; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;padding-inline:16px}
+.wrap{max-width:880px;margin-inline:auto;padding-block:32px 96px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,6vw,3.25rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.75rem;font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0}
+a{color:var(--jade)}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--jade);outline-offset:2px;border-radius:4px}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lead{font-size:1.15rem;max-width:65ch}
+.prose{max-width:68ch}
+section{display:flex;flex-direction:column;gap:20px;scroll-margin-top:72px}
+.head{display:flex;flex-direction:column;gap:14px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:-16px;padding:10px 16px;display:flex;gap:6px;overflow-x:auto}
+nav.toc a{font-family:var(--f-mono);font-size:.75rem;text-decoration:none;color:var(--muted);padding:6px 10px;border-radius:999px;white-space:nowrap}
+nav.toc a:hover{background:var(--jade-soft);color:var(--jade)}
+
+.verdict{background:var(--jade);color:#fff;padding:28px;border-radius:6px;display:flex;flex-direction:column;gap:14px}
+:root[data-theme="dark"] .verdict{color:#06201A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .verdict{color:#06201A}}
+.verdict h2{color:inherit}
+.verdict p{max-width:62ch}
+.verdict .eyebrow{color:inherit;opacity:.8}
+
+.notice{border:1px solid var(--warn);background:var(--warn-soft);padding:18px 20px;border-radius:6px;display:flex;flex-direction:column;gap:8px}
+.notice strong{font-family:var(--f-display)}
+.notice code{font-family:var(--f-mono);font-size:.85em}
+
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card .tag{align-self:flex-start}
+.big{font-family:var(--f-display);font-weight:800;font-size:2rem;line-height:1;color:var(--jade)}
+.small{font-size:.85rem;color:var(--muted)}
+
+.tag{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--jade-soft);color:var(--jade);white-space:nowrap}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.roast{background:var(--roast-soft);color:var(--roast)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.92rem}
+th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td code,p code,li code{font-family:var(--f-mono);font-size:.85em;background:var(--bg);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
+td:first-child{font-weight:600}
+
+ol.steps,ul.list{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:8px;max-width:68ch}
+
+.bars{display:flex;flex-direction:column;gap:18px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+.bar-group{display:flex;flex-direction:column;gap:6px}
+.bar-group h3{font-size:.95rem}
+.bar-row{display:grid;grid-template-columns:90px 1fr 56px;align-items:center;gap:10px;font-size:.85rem}
+.bar-track{height:14px;background:var(--bg);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:var(--jade)}
+.bar-fill.alt{background:var(--roast)}
+.bar-val{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+
+.prompts{display:flex;flex-direction:column;gap:8px}
+.prompt{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 14px}
+.prompt span{min-width:0;overflow-wrap:anywhere}
+.prompt button{flex:none;font-family:var(--f-mono);font-size:.72rem;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:4px;padding:6px 10px;cursor:pointer}
+.prompt button:hover{border-color:var(--jade);color:var(--jade)}
+
+details{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 18px}
+details summary{cursor:pointer;font-weight:600}
+details[open] summary{margin-bottom:10px}
+pre{margin:0;overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px;font-family:var(--f-mono);font-size:.8rem;line-height:1.5}
+
+.phase{display:grid;grid-template-columns:130px 1fr;gap:16px;padding-block:18px;border-top:1px solid var(--line)}
+.phase:last-child{border-bottom:1px solid var(--line)}
+.phase .when{font-family:var(--f-display);font-weight:700;color:var(--jade);font-size:1.05rem}
+.phase ul{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:6px}
+@media (max-width:560px){.phase{grid-template-columns:1fr;gap:6px}.bar-row{grid-template-columns:70px 1fr 48px}}
+
+footer ul{font-size:.85rem;color:var(--muted);padding-left:1.2rem;display:flex;flex-direction:column;gap:4px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="wrap">
+
+<header class="head">
+  <span class="eyebrow">Audit SEO · AEO · GEO</span>
+  <h1>Maison Savann et le café de spécialité asiatique</h1>
+  <p class="lead">Marché France et Europe, angles morts à occuper et plan pour devenir la source que les IA citent sur le café d'Asie.</p>
+  <div class="meta"><span>Rapport du 30 septembre 2026</span><span>Site étudié : testnico.maisonsavann.com</span><span>Périmètre : café de spécialité, torréfaction, origines asiatiques</span></div>
+</header>
+
+<nav class="toc" aria-label="Sommaire">
+  <a href="#synthese">Synthèse</a><a href="#limites">Limites</a><a href="#marche">Marché</a><a href="#origines">Origines</a><a href="#angles">Angles morts</a><a href="#seo">SEO</a><a href="#aeo">AEO</a><a href="#geo">GEO</a><a href="#technique">Checklist site</a><a href="#plan">Plan</a><a href="#mesure">Mesure</a><a href="#sources">Sources</a>
+</nav>
+
+<section id="synthese">
+  <div class="verdict">
+    <span class="eyebrow">Verdict</span>
+    <h2>La place de référence est libre. Elle se prend par les faits, pas par le volume d'articles.</h2>
+    <p>Mes recherches n'ont fait remonter aucun torréfacteur français qui se positionne clairement comme le spécialiste du café asiatique. Les sources qui parlent du sujet sont soit des médias anglophones (Sprudge, Barista Magazine, Fresh Cup), soit des sites d'origine (Đà Lạt), soit des généralistes de la spécialité. Les IA ont donc peu de sources françaises solides à citer.</p>
+    <p>Pour l'occuper, Maison Savann doit devenir une entité identifiable (une marque que les IA savent nommer) et publier les données et les explications que personne d'autre ne met en ligne en français.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card"><span class="tag">Priorité 1</span><h3>Verrouiller l'entité de marque</h3><p class="small">Le nom est confondu avec « Maison Savannah » (Ibiza) et « Savannah Café » (Paris) dans les résultats. Site de production, schema Organization, Wikidata, profils cohérents.</p></div>
+    <div class="card"><span class="tag">Priorité 2</span><h3>Posséder le Fine Robusta d'Asie</h3><p class="small">Vietnam et Laos. L'Allemagne bascule déjà vers le robusta de qualité. Très peu de contenu français structuré.</p></div>
+    <div class="card"><span class="tag">Priorité 3</span><h3>Publier un « État du café asiatique »</h3><p class="small">Une référence chiffrée, mise à jour, avec prix, origines, torréfacteurs. Les contenus avec données sont ceux que les IA reprennent.</p></div>
+    <div class="card"><span class="tag">Priorité 4</span><h3>Répondre aux questions, en tête de page</h3><p class="small">Qu'est-ce que le fine robusta ? Le café du Yunnan est-il bon ? Comment préparer au phin ? Une réponse de 2 phrases, puis le détail.</p></div>
+    <div class="card"><span class="tag">Priorité 5</span><h3>Aller chercher là où les IA lisent</h3><p class="small">Wikipedia, Reddit, presse spécialisée, annuaires. Le site seul ne suffit pas.</p></div>
+    <div class="card"><span class="tag warn">Échéance</span><h3>EUDR : 30 décembre 2026</h3><p class="small">La traçabilité devient un sujet de recherche. Un guide clair, publié avant l'échéance, sera cité.</p></div>
+  </div>
+</section>
+
+<section id="limites">
+  <h2>Ce que cet audit a pu vérifier, et ce qu'il n'a pas pu</h2>
+  <div class="notice">
+    <strong>Le site n'a pas pu être analysé.</strong>
+    <p>Mon environnement bloque l'accès à <code>testnico.maisonsavann.com</code> (le proxy réseau refuse la connexion). Je n'ai donc lu ni les pages, ni le HTML, ni <code>robots.txt</code>, <code>sitemap.xml</code> ou <code>llms.txt</code>. Je ne vous donne aucune note sur le site que je n'aurais pas mesurée.</p>
+    <p>Une recherche web sur « Maison Savann café » et sur « maisonsavann.com » ne renvoie rien qui corresponde à votre marque. Pour une URL en <code>testnico.</code>, c'est attendu : cela ressemble à un environnement de test, souvent non indexé. La section « Checklist site » ci-dessous liste ce qu'il faut contrôler, avec les commandes.</p>
+  </div>
+  <div class="grid">
+    <div class="card"><span class="tag ok">Établi</span><p class="small">Chiffres de marché, tendances d'origine, règles EUDR, parts de sources citées par les IA. Chaque chiffre renvoie à une source en bas de page.</p></div>
+    <div class="card"><span class="tag warn">Estimation</span><p class="small">Niveaux de concurrence, priorités et impact des angles morts. C'est mon analyse, sans outil de volumes de recherche. Les volumes sont à mesurer.</p></div>
+    <div class="card"><span class="tag bad">Non vérifié</span><p class="small">Tout l'état technique et éditorial du site : balisage, vitesse, indexation, contenus, maillage, accès des robots IA.</p></div>
+  </div>
+  <p class="prose">Pour que je complète l'audit du site : autorisez ce domaine dans les réglages réseau de l'environnement cloud (menu de l'environnement dans la barre de titre, puis Edit, puis Network access), ou collez-moi le HTML de la page d'accueil, d'une fiche produit et de <code>robots.txt</code>.</p>
+</section>
+
+<section id="marche">
+  <h2>Le marché en quelques chiffres</h2>
+  <div class="grid">
+    <div class="card"><div class="big">3 à 3,6 Md€</div><p>Marché français du café en 2025, pour environ 370 000 tonnes consommées.</p><span class="small">Source secondaire, à recouper.</span></div>
+    <div class="card"><div class="big">7–10 %</div><p>Croissance annuelle estimée du segment spécialité en France, qui pèserait jusqu'à 20 % en valeur.</p><span class="small">Source secondaire, ordre de grandeur seulement.</span></div>
+    <div class="card"><div class="big">~2 500</div><p>Torréfacteurs actifs en Allemagne, premier importateur européen de café vert et premier client du café vietnamien.</p><span class="small">Presse économique vietnamienne.</span></div>
+    <div class="card"><div class="big">8 → 30 %</div><p>Part du spécialité dans la production du Yunnan, de moins de 8 % en 2021 à plus de 30 % en 2024.</p><span class="small">WTTW, 2026.</span></div>
+  </div>
+  <p class="prose">Deux lectures utiles. D'abord, l'offre d'origine asiatique en spécialité progresse vite alors que les contenus francophones ne suivent pas. Ensuite, l'Europe cherche de la traçabilité et de l'histoire derrière le grain : coopératives de minorités ethniques, cultures sous couvert forestier. C'est précisément ce que Maison Savann peut documenter mieux que les généralistes.</p>
+  <p class="prose">Autres signaux : Bangkok accueille World of Coffee Asia en 2026, et trois torréfacteurs de Đà Lạt ont été primés à l'international cette année (K'Ho Coffee Collective, Cầu Đất Roastery, entre autres). Le sujet gagne en visibilité médiatique, donc en requêtes.</p>
+</section>
+
+<section id="origines">
+  <h2>Les origines asiatiques et leur potentiel éditorial</h2>
+  <p class="prose">Le « niveau de concurrence FR » et l'« opportunité » sont mes estimations qualitatives, à valider avec un outil de mots-clés et une revue des résultats de recherche.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Origine</th><th>Fait établi</th><th>Concurrence FR (est.)</th><th>Opportunité</th><th>Angle à occuper</th></tr></thead>
+    <tbody>
+      <tr><td>Vietnam</td><td>95 % robusta, 2e exportateur mondial. Arabica à Đà Lạt et Sơn La. Standardisation du Fine Robusta en cours.</td><td><span class="tag warn">Moyenne</span></td><td><span class="tag ok">Très forte</span></td><td>Fine Robusta, Đà Lạt, phin, torréfaction artisanale locale</td></tr>
+      <tr><td>Yunnan (Chine)</td><td>Quasi tout le café chinois. Baoshan et Pu'er inscrits parmi les 100 IG chinoises protégées dans l'UE. Exports vers l'UE depuis 2004.</td><td><span class="tag ok">Faible</span></td><td><span class="tag ok">Très forte</span></td><td>IG européenne, terroir du thé pu-erh, Geisha du Yunlan</td></tr>
+      <tr><td>Laos (Bolaven)</td><td>Exporte vers la France, la Suède, la Belgique. Coopérative bio de plus de 1 000 t par an. Premier fournisseur de la Thaïlande (61,7 %).</td><td><span class="tag ok">Faible</span></td><td><span class="tag ok">Forte</span></td><td>Origine mal nommée en France, histoire coloniale et coopératives</td></tr>
+      <tr><td>Indonésie</td><td>Kintamani (Bali) : première IG café d'Indonésie, 2008. 48 IG café dans le pays.</td><td><span class="tag bad">Forte</span></td><td><span class="tag warn">Moyenne</span></td><td>Différencier : procédé giling basah, IG, îles moins connues (Flores, Toraja, Gayo)</td></tr>
+      <tr><td>Myanmar (Shan)</td><td>Arabica spécialité depuis 2014 environ (Sawbwa : 84+). Contexte politique délicat.</td><td><span class="tag ok">Faible</span></td><td><span class="tag warn">Moyenne</span></td><td>Page de diligence d'approvisionnement. Risque de réputation à traiter en transparence</td></tr>
+      <tr><td>Thaïlande</td><td>Communauté spécialité en croissance, Bangkok hôte de World of Coffee Asia 2026.</td><td><span class="tag ok">Faible</span></td><td><span class="tag">Moyenne</span></td><td>Nord (Chiang Rai, Chiang Mai), scène de Bangkok</td></tr>
+      <tr><td>Inde</td><td>Monsoon Malabar cité comme origine asiatique en vogue à Londres.</td><td><span class="tag warn">Moyenne</span></td><td><span class="tag">Moyenne</span></td><td>Procédé mousson, Karnataka, Kerala</td></tr>
+      <tr><td>Autres (Taïwan, Philippines, Timor-Leste, Népal, Japon)</td><td>Non étudiés ici. À vérifier avant de s'engager.</td><td><span class="tag">À mesurer</span></td><td><span class="tag">À mesurer</span></td><td>Origines rares comme vitrine d'expertise ; culture du kissaten japonais en contenu adjacent</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="angles">
+  <h2>Les angles morts à occuper</h2>
+  <p class="prose">Un angle mort, c'est une question que les gens posent et pour laquelle il n'existe pas de réponse francophone claire, sourcée et structurée. Voici les onze que je vous recommande, classés par rapport impact / effort (estimation).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Angle</th><th>Pourquoi c'est vide</th><th>Contenu à créer</th><th>Impact</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td>1. Fine Robusta d'Asie</td><td>Sujet récent, les sources FR sont rares. Standards CQI / Q Robusta encore peu expliqués.</td><td>Guide de référence, glossaire, fiches par région, comparatif arabica / robusta fin</td><td><span class="tag ok">Élevé</span></td><td><span class="tag">Moyen</span></td></tr>
+      <tr><td>2. IG européennes du Yunnan</td><td>Baoshan et Pu'er protégés dans l'UE, presque aucune explication française.</td><td>Article pilier, fiche IG, interview de producteur</td><td><span class="tag ok">Élevé</span></td><td><span class="tag ok">Faible</span></td></tr>
+      <tr><td>3. Baromètre annuel du café asiatique en France</td><td>Aucune donnée agrégée disponible.</td><td>Étude publiée : qui vend quoi, à quel prix, quelles origines, quels procédés</td><td><span class="tag ok">Très élevé</span></td><td><span class="tag bad">Élevé</span></td></tr>
+      <tr><td>4. Préparations traditionnelles</td><td>Requêtes pratiques massives, contenus dispersés et peu fiables.</td><td>Phin, cà phê sữa đá, café à l'œuf, kopi tubruk : pas à pas, ratios, matériel</td><td><span class="tag ok">Élevé</span></td><td><span class="tag ok">Faible</span></td></tr>
+      <tr><td>5. Giling basah et procédés asiatiques</td><td>Procédés peu vulgarisés en français.</td><td>Guide des procédés, impact sur la tasse, glossaire avec termes locaux</td><td><span class="tag">Moyen</span></td><td><span class="tag ok">Faible</span></td></tr>
+      <tr><td>6. Traçabilité et EUDR</td><td>Échéance le 30 déc. 2026, information surtout juridique et peu accessible.</td><td>Guide « ce que l'EUDR change pour votre café d'Asie », page transparence par lot</td><td><span class="tag ok">Élevé</span></td><td><span class="tag">Moyen</span></td></tr>
+      <tr><td>7. Transparence des prix et des producteurs</td><td>Les marques communiquent peu de chiffres.</td><td>Fiche de traçabilité par lot : altitude, variété, procédé, score, prix payé</td><td><span class="tag ok">Élevé</span></td><td><span class="tag">Moyen</span></td></tr>
+      <tr><td>8. Diaspora francophone</td><td>Communautés vietnamienne, chinoise, laotienne en France, peu ciblées sur la spécialité.</td><td>Pages bilingues, vocabulaire vietnamien (<code>cà phê đặc sản</code>), ancrage local</td><td><span class="tag">Moyen</span></td><td><span class="tag">Moyen</span></td></tr>
+      <tr><td>9. Europe multilingue</td><td>L'Allemagne est le premier importateur et la demande de robusta de qualité y monte.</td><td>Versions EN puis DE, balises <code>hreflang</code>, vocabulaire local</td><td><span class="tag ok">Élevé</span></td><td><span class="tag bad">Élevé</span></td></tr>
+      <tr><td>10. Éthique de l'origine sensible</td><td>Myanmar, pression sur les prix, travail. Les marques évitent le sujet.</td><td>Politique d'approvisionnement publique, sources citées, mise à jour datée</td><td><span class="tag">Moyen</span></td><td><span class="tag">Moyen</span></td></tr>
+      <tr><td>11. Thé et café d'Asie</td><td>Le Yunnan est d'abord connu pour le thé. Passerelle naturelle.</td><td>Pages croisées : pu-erh, thé, café, dégustation, accords</td><td><span class="tag">Moyen</span></td><td><span class="tag ok">Faible</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="seo">
+  <h2>SEO : construire l'autorité thématique</h2>
+  <p class="prose">Le SEO classique reste le socle : les moteurs d'IA s'appuient sur des index web. L'objectif est qu'un lecteur qui tape n'importe quelle requête sur le café d'Asie tombe sur un contenu Maison Savann.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Grappe de requêtes</th><th>Exemples (volumes non mesurés)</th><th>Intention</th><th>Format</th></tr></thead>
+    <tbody>
+      <tr><td>Découverte d'origine</td><td><code>café vietnamien de spécialité</code>, <code>café du Yunnan</code>, <code>café du Laos</code></td><td>Informationnelle</td><td>Page pilier par origine, avec sous-pages par région</td></tr>
+      <tr><td>Définition</td><td><code>fine robusta</code>, <code>giling basah</code>, <code>café IG Kintamani</code></td><td>Informationnelle</td><td>Glossaire avec définition en tête</td></tr>
+      <tr><td>Préparation</td><td><code>comment utiliser un phin</code>, <code>café vietnamien recette</code></td><td>Pratique</td><td>Tutoriel avec étapes numérotées</td></tr>
+      <tr><td>Achat</td><td><code>acheter café vietnamien en grains</code>, <code>café de spécialité asie en ligne</code></td><td>Transactionnelle</td><td>Catégories et fiches produit riches</td></tr>
+      <tr><td>Comparaison</td><td><code>robusta vs arabica spécialité</code>, <code>Yunnan vs Éthiopie</code></td><td>Commerciale</td><td>Comparatifs avec tableaux</td></tr>
+      <tr><td>Traçabilité</td><td><code>EUDR café</code>, <code>café traçable origine</code></td><td>Informationnelle et confiance</td><td>Guide + page transparence</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Règles de construction</h3>
+  <ol class="steps">
+    <li><strong>Une page pilier par origine</strong>, reliée à des pages enfants (région, procédé, lot, préparation). Tout le cluster se lie en retour au pilier.</li>
+    <li><strong>Une seule URL par sujet.</strong> Pas de page produit qui fait le travail d'un guide, ni l'inverse.</li>
+    <li><strong>Une date de mise à jour visible</strong> et un auteur identifié sur chaque guide.</li>
+    <li><strong>Des chiffres propres à la marque</strong> (lots, scores, prix payés, altitudes) : c'est ce que les concurrents ne peuvent pas copier.</li>
+    <li><strong>Un domaine de production unique.</strong> Le sous-domaine <code>testnico.</code> ne doit pas être indexé (<code>noindex</code> ou protection par mot de passe), sinon il dilue le domaine principal.</li>
+  </ol>
+</section>
+
+<section id="aeo">
+  <h2>AEO : être la réponse qu'on extrait</h2>
+  <p class="prose">L'AEO vise les réponses directes : extraits en position zéro, encadrés « Autres questions posées », aperçus IA de Google, assistants vocaux. Ces systèmes prélèvent un passage court et autonome. Il faut donc écrire des passages qui tiennent seuls.</p>
+  <h3>La structure qui fonctionne</h3>
+  <ol class="steps">
+    <li><strong>Le titre est la question</strong> telle qu'on la pose (« Qu'est-ce que le fine robusta ? »).</li>
+    <li><strong>Deux phrases de réponse juste en dessous</strong>, avec le sujet nommé en toutes lettres (« Le fine robusta est… »), sans pronom ni renvoi.</li>
+    <li><strong>Le développement ensuite</strong> : nuances, chiffres, sources, exemples de lots.</li>
+    <li><strong>Une FAQ de 5 à 8 questions</strong> en bas de chaque page pilier, balisée en <code>FAQPage</code>. Google a restreint l'affichage des résultats enrichis FAQ, mais le balisage reste lisible par les systèmes qui lisent le JSON-LD.</li>
+    <li><strong>Des tableaux et des listes</strong> pour les comparaisons et les étapes : ce sont les formats les plus faciles à extraire.</li>
+  </ol>
+  <h3>Questions prioritaires à couvrir en français</h3>
+  <div class="prompts" id="qlist"></div>
+  <h3>Balisage à déployer</h3>
+  <div class="grid">
+    <div class="card"><h3>Organization</h3><p class="small">Nom exact, logo, adresse, contact, et <code>sameAs</code> vers tous les profils officiels. Base de l'identité de marque.</p></div>
+    <div class="card"><h3>Product + Offer</h3><p class="small">Origine, procédé, altitude, variété, poids, prix, disponibilité, avis. Un champ par donnée, pas dans un paragraphe.</p></div>
+    <div class="card"><h3>Article / FAQPage / HowTo</h3><p class="small">Auteur, date de publication et de mise à jour, questions. <code>HowTo</code> pour le phin et les préparations.</p></div>
+    <div class="card"><h3>BreadcrumbList</h3><p class="small">Fil d'Ariane sur toutes les pages, pour que l'arborescence pilier / enfant soit lisible.</p></div>
+  </div>
+</section>
+
+<section id="geo">
+  <h2>GEO : devenir une source citée par les IA</h2>
+  <p class="prose">Les moteurs génératifs cherchent des passages dans un index, puis choisissent des sources selon la pertinence et l'autorité. Ils peuvent citer un lien, nommer une marque sans lien, ou la recommander directement. Être cité se joue donc en partie hors de votre site.</p>
+
+  <h3>D'où viennent les citations des IA</h3>
+  <div class="bars" role="img" aria-label="Part des citations par plateforme, source Profound, 30 millions de citations">
+    <div class="bar-group"><h3>ChatGPT</h3>
+      <div class="bar-row"><span>Wikipedia</span><div class="bar-track"><div class="bar-fill" style="width:47.9%"></div></div><span class="bar-val">47,9 %</span></div>
+      <div class="bar-row"><span>Reddit</span><div class="bar-track"><div class="bar-fill alt" style="width:11.3%"></div></div><span class="bar-val">11,3 %</span></div>
+    </div>
+    <div class="bar-group"><h3>Google AI Overviews</h3>
+      <div class="bar-row"><span>Reddit</span><div class="bar-track"><div class="bar-fill alt" style="width:21%"></div></div><span class="bar-val">21 %</span></div>
+      <div class="bar-row"><span>Wikipedia</span><div class="bar-track"><div class="bar-fill" style="width:5.7%"></div></div><span class="bar-val">5,7 %</span></div>
+    </div>
+    <div class="bar-group"><h3>Perplexity</h3>
+      <div class="bar-row"><span>Reddit</span><div class="bar-track"><div class="bar-fill alt" style="width:46.7%"></div></div><span class="bar-val">46,7 %</span></div>
+      <div class="bar-row"><span>Wikipedia</span><div class="bar-track"></div><span class="bar-val">n.c.</span></div>
+    </div>
+    <p class="small">Étude Profound, 30 millions de citations, août 2024 à juin 2025, telle que rapportée par Search Engine Roundtable. n.c. : chiffre non communiqué dans la source. Anglophone en majorité : la proportion sur des requêtes françaises peut différer.</p>
+  </div>
+  <p class="prose">Conséquence pratique : une marque absente de Wikipedia et de Reddit part avec un handicap, même avec un excellent site. Les deux sont à travailler, avec prudence : ces communautés rejettent la promotion.</p>
+
+  <h3>Plan d'autorité hors site</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Levier</th><th>Action</th><th>Précaution</th></tr></thead>
+    <tbody>
+      <tr><td>Wikidata</td><td>Créer l'entité « Maison Savann » avec site officiel, fondation, secteur. Ajouter des liens vers vos pages d'origine.</td><td>Faits vérifiables, sources indépendantes.</td></tr>
+      <tr><td>Wikipedia (FR / EN)</td><td>Ne pas créer une page de marque. Contribuer aux articles « Café au Vietnam », « Café au Laos », « Café du Yunnan » avec des données sourcées.</td><td>Conflit d'intérêts à déclarer. Citer des sources tierces, pas votre site.</td></tr>
+      <tr><td>Reddit et forums</td><td>Répondre utilement dans les communautés café francophones et anglophones. Partager le baromètre quand il répond à une question.</td><td>Pas de lien systématique. Profil transparent.</td></tr>
+      <tr><td>Presse spécialisée</td><td>Proposer les données du baromètre à Sprudge, Barista Magazine, Fresh Cup, presse gastronomique FR.</td><td>Un fait nouveau vaut mieux qu'un communiqué.</td></tr>
+      <tr><td>Annuaires et places de marché</td><td>Fiche Google Business Profile, annuaires de torréfacteurs, profils sur les plateformes de café vert si vous vendez en B2B.</td><td>Mêmes nom, adresse et description partout.</td></tr>
+      <tr><td>Experts et sources citables</td><td>Quote d'un Q Grader, d'un producteur, d'une coopérative avec nom, rôle, lieu.</td><td>Citations réelles et vérifiables.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Sur le site</h3>
+  <ul class="list">
+    <li><strong>Ajouter des données chiffrées et des citations d'experts</strong> dans les pages piliers. L'étude académique qui a défini la GEO (Aggarwal et al., 2023) a mesuré que ces ajouts améliorent la visibilité dans les réponses génératives.</li>
+    <li><strong>Autoriser les robots d'IA</strong> dans <code>robots.txt</code> : <code>GPTBot</code>, <code>OAI-SearchBot</code>, <code>ClaudeBot</code>, <code>PerplexityBot</code>, <code>Google-Extended</code>. Un blocage, même involontaire, vous retire des réponses.</li>
+    <li><strong>Soumettre le site à Bing Webmaster Tools et activer IndexNow.</strong> Plusieurs moteurs d'IA s'appuient sur l'index de Bing.</li>
+    <li><strong>Publier un <code>llms.txt</code></strong> : coût faible, utile comme résumé lisible du site. Je n'ai pas trouvé de preuve que les grands moteurs l'utilisent aujourd'hui pour décider des citations. C'est donc un bonus, pas une priorité.</li>
+    <li><strong>HTML rendu côté serveur.</strong> Beaucoup de robots ne lisent pas le JavaScript. Si le contenu n'apparaît que côté client, il n'existe pas pour eux.</li>
+    <li><strong>Lever l'ambiguïté du nom.</strong> Écrire « Maison Savann » de façon identique partout, décrire la marque en une phrase type (« torréfacteur de café de spécialité d'Asie, basé à … ») et la répéter sur le site et les profils.</li>
+  </ul>
+</section>
+
+<section id="technique">
+  <h2>Checklist site à exécuter</h2>
+  <p class="prose">Tout est à l'état « à vérifier » car je n'ai pas pu charger le site. Les commandes sont à lancer sur le domaine de production une fois en ligne.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Contrôle</th><th>Comment vérifier</th><th>Attendu</th><th>État</th></tr></thead>
+    <tbody>
+      <tr><td>Staging non indexable</td><td><code>curl -sI https://testnico.maisonsavann.com | grep -i x-robots</code></td><td><code>noindex</code> ou accès protégé</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Robots IA autorisés</td><td><code>curl -s DOMAINE/robots.txt</code></td><td>Aucun <code>Disallow: /</code> pour les robots d'IA ; ligne <code>Sitemap:</code></td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Sitemap</td><td><code>curl -s DOMAINE/sitemap.xml</code></td><td>Pages indexables uniquement, <code>lastmod</code> exacts</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Titre, description, H1</td><td>Code source de chaque page type</td><td>Un H1 unique, titre &lt; 60 car., description unique</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Canonique et langue</td><td><code>&lt;link rel="canonical"&gt;</code>, <code>&lt;html lang="fr"&gt;</code></td><td>Canonique vers le domaine de production</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Contenu rendu sans JS</td><td><code>curl -s URL | grep -c "café"</code></td><td>Le texte des produits est dans le HTML brut</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Données structurées</td><td>Test des résultats enrichis de Google, validateur schema.org</td><td>Organization, Product, Article, FAQPage, BreadcrumbList</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Vitesse et Core Web Vitals</td><td>PageSpeed Insights, mobile</td><td>LCP &lt; 2,5 s, CLS &lt; 0,1, INP &lt; 200 ms</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Maillage interne</td><td>Crawl du site, recherche de pages orphelines</td><td>Chaque page à 3 clics maximum de l'accueil</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Pages de confiance</td><td>À propos, contact, mentions légales, livraison, retours</td><td>Présentes, avec équipe et adresse</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Fiches produit</td><td>Lire 3 fiches</td><td>Origine, altitude, procédé, variété, score, notes, préparation conseillée</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Hreflang (si multilingue)</td><td>Balises <code>hreflang</code> réciproques</td><td>FR, EN, puis DE</td><td><span class="tag">À vérifier</span></td></tr>
+      <tr><td>Search Console et Bing</td><td>Propriété vérifiée, sitemap soumis</td><td>Couverture sans erreur</td><td><span class="tag">À vérifier</span></td></tr>
+    </tbody>
+  </table></div>
+  <details>
+    <summary>Script de contrôle rapide à copier</summary>
+    <pre id="script">D=https://DOMAINE-DE-PRODUCTION
+echo "--- robots.txt";  curl -s $D/robots.txt
+echo "--- sitemap";      curl -s $D/sitemap.xml | head -40
+echo "--- llms.txt";     curl -s -o /dev/null -w "%{http_code}\n" $D/llms.txt
+echo "--- en-têtes";     curl -sI $D | head -20
+echo "--- titre/H1/canonique"
+curl -s $D | grep -oiE '&lt;title&gt;.*&lt;/title&gt;|&lt;h1[^&gt;]*&gt;.*&lt;/h1&gt;|rel="canonical"[^&gt;]*|&lt;html[^&gt;]*lang="[a-z-]+"'
+echo "--- JSON-LD présent ?"
+curl -s $D | grep -c 'application/ld+json'</pre>
+  </details>
+</section>
+
+<section id="plan">
+  <h2>Plan d'action</h2>
+  <div>
+    <div class="phase"><div class="when">Semaines 1–2<br><span class="small">Fondations</span></div><ul>
+      <li>Mettre en ligne sur le domaine de production et protéger <code>testnico.</code></li>
+      <li>Exécuter la checklist et corriger : robots, sitemap, rendu serveur, canoniques.</li>
+      <li>Déployer Organization et <code>sameAs</code>, vérifier Search Console et Bing, activer IndexNow.</li>
+      <li>Fixer la phrase de marque et le nom exact, l'appliquer partout.</li>
+    </ul></div>
+    <div class="phase"><div class="when">Mois 1–2<br><span class="small">Piliers</span></div><ul>
+      <li>Publier 3 piliers : Fine Robusta d'Asie, Yunnan et ses IG, Laos / Bolaven.</li>
+      <li>Publier le guide du phin et le glossaire des procédés.</li>
+      <li>Ajouter une fiche de traçabilité par lot sur chaque produit.</li>
+      <li>FAQ balisée sur chaque pilier. Dates et auteurs visibles.</li>
+    </ul></div>
+    <div class="phase"><div class="when">Mois 2–4<br><span class="small">Autorité</span></div><ul>
+      <li>Publier le guide EUDR avant le 30 décembre 2026.</li>
+      <li>Lancer le premier « État du café asiatique en France » avec données sourcées.</li>
+      <li>Créer l'entité Wikidata. Contributions Wikipedia sourcées et déclarées.</li>
+      <li>Présence utile sur Reddit et forums. Envoi du baromètre à la presse spécialisée.</li>
+    </ul></div>
+    <div class="phase"><div class="when">Mois 4–12<br><span class="small">Extension</span></div><ul>
+      <li>Version anglaise des piliers, puis allemande (premier importateur européen).</li>
+      <li>Pages diaspora bilingues, origines secondaires (Thaïlande, Inde, Myanmar avec politique d'approvisionnement).</li>
+      <li>Baromètre mis à jour chaque trimestre, avec historique daté.</li>
+      <li>Revue mensuelle des citations IA, ajustement des contenus.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="mesure">
+  <h2>Mesurer : êtes-vous cité ?</h2>
+  <p class="prose">Le SEO se suit dans Search Console. La citation par les IA ne se suit pas dans un outil unique : il faut poser les mêmes questions, chaque mois, à plusieurs assistants, et noter qui est cité. Les réponses varient d'une fois à l'autre, donc répétez 3 fois chaque prompt.</p>
+  <div class="prompts" id="plist"></div>
+  <h3>Indicateurs</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Indicateur</th><th>Outil</th><th>Fréquence</th></tr></thead>
+    <tbody>
+      <tr><td>Part de prompts où Maison Savann est cité</td><td>Test manuel ChatGPT, Perplexity, Gemini, Claude, Copilot</td><td>Mensuelle</td></tr>
+      <tr><td>Nature de la mention (lien, nom seul, recommandation)</td><td>Tableau de suivi</td><td>Mensuelle</td></tr>
+      <tr><td>Requêtes en position 0 ou dans « Autres questions posées »</td><td>Search Console, suivi de positions</td><td>Mensuelle</td></tr>
+      <tr><td>Pages piliers indexées et impressions</td><td>Search Console, Bing Webmaster</td><td>Hebdomadaire</td></tr>
+      <tr><td>Visites venues d'assistants IA</td><td>Analytics, segment sur les référents des assistants</td><td>Mensuelle</td></tr>
+      <tr><td>Backlinks et mentions de marque</td><td>Outil de liens, alertes de marque</td><td>Mensuelle</td></tr>
+      <tr><td>Présence Wikidata / Wikipedia / Reddit</td><td>Contrôle manuel</td><td>Trimestrielle</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer id="sources">
+  <h2>Sources</h2>
+  <ul>
+    <li><a href="https://seroundtable.com/chatgpt-google-aio-sources-39578.html">Search Engine Roundtable : ChatGPT cite surtout Wikipedia, Google AI Overviews surtout Reddit (étude Profound)</a></li>
+    <li><a href="https://vietnamnews.vn/economy/1780783/viet-nam-seeks-stronger-foothold-in-germany-s-premium-coffee-market.html">Viet Nam News : le Vietnam vise le marché allemand du café premium</a></li>
+    <li><a href="https://www.wttw.com/playlist/2026/03/05/asian-origin-coffee-rises-chicago">WTTW : le café d'origine asiatique monte (Yunnan : 8 % → 30 % de spécialité)</a></li>
+    <li><a href="https://news.baotayninh.vn/vietnam-s-roasted-coffee-exports-to-thailand-rise-as-demand-shifts-to-premium-brews-145638.html">Báo Tây Ninh : le Laos premier fournisseur de la Thaïlande (61,7 %)</a></li>
+    <li><a href="https://sprudge.com/world-of-coffee-asia-is-heading-to-bangkok-in-2026-338593.html">Sprudge : World of Coffee Asia 2026 à Bangkok</a></li>
+    <li><a href="https://dalat.app/fr/blog/news/da-lat-specialty-coffee-roasters-international-awards-2026">dalat.app : torréfacteurs de Đà Lạt primés en 2026</a></li>
+    <li><a href="https://amp.scmp.com/magazines/post-magazine/long-reads/article/3185947/single-origin-coffee-yunnan-china-known-pu-erh">SCMP : café du Yunnan, exports et indications géographiques</a></li>
+    <li><a href="https://opendevelopmentmekong.net/news/foreign-markets-interested-in-lao-organic-coffee/">Open Development Mekong : café bio du Laos</a></li>
+    <li><a href="https://www.cirad.fr/en/worldwide/our-regional-offices/southeast-asian-islands/news-southeast-asian-islands/the-successful-journey-of-kintamani-bali-coffee">CIRAD : l'IG Kintamani Bali</a></li>
+    <li><a href="https://freshcup.com/a-look-at-the-future-of-fine-robusta-through-vietnamese-specialty-coffee/">Fresh Cup : l'avenir du Fine Robusta vu du Vietnam</a></li>
+    <li><a href="https://coffeeinstitute.org/post/simexco-daklak-vietnam">Coffee Quality Institute : Fine Robusta et Q Robusta au Vietnam</a></li>
+    <li><a href="https://algrano.com/origins/myanmar">Algrano : café du Myanmar</a> et <a href="https://www.baristamagazine.com/a-look-at-specialty-coffee-culture-in-laos/">Barista Magazine : spécialité au Laos</a></li>
+    <li><a href="https://kpmg.com/fr/fr/articles/croissance-responsable/eudr-mise-en-conformite-entreprises.html">KPMG France : EUDR, report d'un an</a> et <a href="https://agrinfo.eu/book-of-reports/deforestation-free-commodities-and-products/">AGRINFO : règlement EUDR</a></li>
+    <li><a href="https://modelesdebusinessplan.com/blogs/infos/marche-cafe-france">Marché du café en France (source secondaire, à recouper)</a></li>
+    <li><a href="https://fr.gaultmillau.com/fr/artisans/la-cafeotheque">Gault&amp;Millau : La Caféothèque</a> et <a href="https://fr.gaultmillau.com/fr/artisans/cafe-vert">Café Vert</a> (exemples de généralistes de la spécialité en France)</li>
+    <li>Aggarwal et al., « GEO: Generative Engine Optimization », 2023 (cité de mémoire, à relire avant diffusion).</li>
+  </ul>
+</footer>
+
+</div>
+
+<script>
+var Q=[
+ "Qu'est-ce que le fine robusta et en quoi diffère-t-il du robusta classique ?",
+ "Le café du Yunnan est-il un café de spécialité ?",
+ "Qu'est-ce que l'IG Baoshan / Pu'er pour le café ?",
+ "Quel est le meilleur café vietnamien de spécialité et où l'acheter en France ?",
+ "Comment préparer un café vietnamien au phin ?",
+ "Qu'est-ce que le procédé giling basah (Sumatra) ?",
+ "D'où vient le café du Laos et est-il bon ?",
+ "Que change l'EUDR pour le café importé d'Asie ?",
+ "Quels torréfacteurs français proposent des cafés d'Asie en spécialité ?"
+];
+var P=[
+ "Quels sont les meilleurs torréfacteurs de café de spécialité asiatique en France ?",
+ "Où acheter du café vietnamien de spécialité en France ?",
+ "Quelle est la différence entre fine robusta et robusta classique ?",
+ "Conseille-moi un café du Yunnan de spécialité.",
+ "Quelles sont les références sur le café de spécialité d'Asie en Europe ?",
+ "Best Asian specialty coffee roasters in Europe",
+ "Where can I buy Vietnamese fine robusta in Europe?",
+ "Qui est Maison Savann ?",
+ "Peux-tu citer des sources fiables sur le café asiatique de spécialité ?",
+ "Quel café d'Asie acheter pour découvrir ? Donne des marques françaises."
+];
+function mk(id,arr){
+  var root=document.getElementById(id); if(!root) return;
+  arr.forEach(function(t){
+    var d=document.createElement("div"); d.className="prompt";
+    var s=document.createElement("span"); s.textContent=t;
+    var b=document.createElement("button"); b.type="button"; b.textContent="Copier";
+    b.addEventListener("click",function(){
+      function done(){b.textContent="Copié"; setTimeout(function(){b.textContent="Copier"},1400)}
+      function fallback(){var r=document.createRange(); r.selectNodeContents(s); var sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); b.textContent="Sélectionné"}
+      try{navigator.clipboard.writeText(t).then(done,fallback)}catch(e){fallback()}
+    });
+    d.appendChild(s); d.appendChild(b); root.appendChild(d);
+  });
+}
+mk("qlist",Q); mk("plist",P);
+</script>
