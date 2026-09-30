@@ -38,23 +38,46 @@ Le cockpit est construit **sur** ces deux surfaces, qui sont l'objet de toute l'
 | Surface | Adresse | Rôle dans le cockpit |
 |---|---|---|
 | **Instagram** | `https://www.instagram.com/cafe_maisonsavann/` (bio : `linktr.ee/maisonsavann`) | contenu, audience, vidéos, boosts, concurrents, conversion vers le site |
-| **Site** | `https://www.maisonsavann.com` (production) | SEO, AEO, GEO, trafic, conversion, emails, avis |
+| **Site V2** | `https://testnico.maisonsavann.com` (V2 de maisonsavann.com, en préparation) | SEO, AEO, GEO, état de préparation, trafic et conversion dès qu'ils existent, emails |
 
-Le staging `testnico.maisonsavann.com` n'est **pas une troisième surface** : c'est la version
-en préparation de maisonsavann.com, utilisée seulement pour mesurer l'état de préparation
-avant la bascule. Chaque écran du cockpit dit clairement quelle surface il regarde
-(Instagram, maisonsavann.com, ou **la jonction des deux** : clics du lien en bio, sessions
-GA4 venant d'Instagram par UTM, ventes et emails attribuables). **Cette jonction est la
-valeur ajoutée du cockpit** : ne traite pas les deux surfaces comme deux tableaux de bord
-séparés dans le même onglet. Ce qui n'appartient à aucune des deux (B2B, logistique,
-torréfaction) reste hors périmètre, sauf si je le demande (§5.8).
+**Le cockpit est construit sur la V2, `testnico.maisonsavann.com`**, qui deviendra
+`maisonsavann.com` à la bascule. La production `maisonsavann.com` **n'est pas la cible** et
+reste **hors limites** (voir règle 8). Conséquences que tu dois intégrer dès le départ :
+
+- **Le staging est fermé aux moteurs volontairement** (`Disallow: /`, `noindex`). Donc, avant
+  la bascule : **pas de position réelle, pas de Search Console, pas de citation IA de la V2**.
+  Ce que le cockpit mesure sur le site aujourd'hui, c'est **l'état de préparation** (notes
+  SEO / AEO / GEO, balisage, pages prêtes, checklists) et **le compte à rebours de la
+  bascule**. Tout classement ou toute citation affichés sans donnée réelle sont marqués **N/V**.
+  Les citations IA observées aujourd'hui (panel de 20 requêtes) portent sur la marque et la
+  production actuelle : garde-les comme **référence de départ**, étiquetées « avant V2 ».
+- **Le cockpit a un paramètre « site cible »** (environnement : `staging` aujourd'hui,
+  `production` après la bascule). Chaque mesure du site porte son **environnement** et sa
+  date. À la bascule, on change le paramètre et **la série continue**, sans repartir de zéro
+  ni mélanger deux environnements dans une même courbe.
+- **La jonction Instagram → site est coupée avant la bascule** : le lien de bio mène à la
+  production, pas à la V2. Côté Instagram, tout se mesure. Côté site, les étapes de
+  l'entonnoir après le clic sont **N/V pour la V2** tant qu'aucun trafic réel ne l'atteint ;
+  les chiffres GA4 de la production ne sont utilisables que **si je te les fournis** (export),
+  jamais en interrogeant la production. Le cockpit prévoit la jonction dès maintenant
+  (UTM, sessions, ajouts panier, emails) et l'active à la bascule.
+- **Sur le staging, aucune écriture, aucun test qui déclenche quelque chose** : SureCart y est
+  branché sur le compte de production en mode live, donc aucune commande de test ni envoi de
+  formulaire. Lecture publique seulement.
+
+Chaque écran du cockpit dit quelle surface il regarde (Instagram, site V2, ou **la jonction
+des deux**). **Cette jonction est la valeur ajoutée du cockpit** : ne traite pas les deux
+surfaces comme deux tableaux de bord séparés dans le même onglet. Ce qui n'appartient à
+aucune des deux (B2B, logistique, torréfaction) reste hors périmètre, sauf si je le demande
+(§5.8).
 
 Ce n'est **pas** un tableau de chiffres. C'est un outil de décision. Chaque écran répond à
 trois questions : **où en est-on, pourquoi, et que fait-on maintenant.** Un indicateur qui ne
 peut déclencher aucune décision n'entre pas dans le cockpit.
 
-Le cockpit surveille **`@cafe_maisonsavann` sur Instagram et `maisonsavann.com`**, et rien
-d'autre en tant que sujet d'analyse (les concurrents servent seulement de point de comparaison).
+Le cockpit surveille **`@cafe_maisonsavann` sur Instagram et `testnico.maisonsavann.com`
+(la V2)**, et rien d'autre en tant que sujet d'analyse (les concurrents servent seulement de
+point de comparaison).
 
 Tu es à la fois : analyste de données social media, expert SEO/AEO/GEO, product designer et
 développeur front. Tu construis **avec moi (Nicolas), pas à ma place** : je ne suis pas
@@ -156,13 +179,19 @@ Si un fichier contredit ce prompt, **le fichier gagne et tu me le signales.**
    passe ; pour les emails collectés, **des comptes seulement**, jamais les adresses.
 8. **Collecte polie** : jamais de collecte directe des pages de résultats Google ni
    d'Instagram connecté ; robots.txt respecté ; les sources publiques seulement.
-   **Lecture de `maisonsavann.com` (production)** : la règle du `projects/site-v2/CLAUDE.md`
-   prime. Elle n'autorise aujourd'hui que la lecture publique anonyme de `robots.txt`,
-   `llms.txt`, des sitemaps, des en-têtes HTTP et de l'accès des robots IA (accueil et une
-   fiche produit), pour l'audit SEO/GEO/AEO. **Aucune connexion admin, aucune écriture.**
-   Si le cockpit a besoin de plus (mesures récurrentes des pages, du balisage, de la vitesse),
-   **tu me demandes un amendement écrit avec le texte exact proposé**, tu ne l'assumes pas.
-   Sans amendement, ces contrôles passent en **N/V** avec le geste manuel équivalent.
+   **Staging `testnico.maisonsavann.com` (cible du cockpit)** : lecture publique anonyme
+   autorisée (pages, HTML, en-têtes, `robots.txt`, `llms.txt`, sitemaps, balisage, PageSpeed,
+   test des robots IA). **Aucune connexion admin, aucune écriture, aucune commande ni
+   formulaire soumis** (voir §0). Le mot de passe, la session admin et les identifiants ne
+   te concernent jamais.
+   **Production `maisonsavann.com` : hors limites**, la règle du `projects/site-v2/CLAUDE.md`
+   prime et elle ne s'assouplit pas d'une session à l'autre. Les amendements existants
+   (récupération de photos, audit SEO/GEO/AEO du 29/09) **ne couvrent pas le cockpit**. Tu ne
+   lis donc pas la production. Les valeurs déjà mesurées sur la production (ex. GPTBot en 429
+   au 29/09) restent affichées comme **historique daté, étiquetées « production, avant
+   bascule »**, sans être remesurées. Si tu penses qu'une lecture de la production est
+   indispensable, tu me le dis et **tu me proposes le texte exact d'un amendement écrit** :
+   tu ne l'assumes pas.
    Même prudence pour Instagram : lecture publique et données que je te fournis seulement,
    jamais de connexion au compte.
 9. **Faits de marque** : applique la section 1.1 (« jamais sourcé directement », affirmations
@@ -198,7 +227,9 @@ questions ni en te lançant seul pendant une heure.
 
 **Phase 0, inventaire (sans me déranger).** Lis les sources du §1.2. Vérifie ce qui est
 réellement branché : Drive, Notion, Attio, Gmail (déconnecté), Canva (non autorisé), connecteur
-Meta, GA4, Search Console. Produis une **matrice de disponibilité des données** : pour chaque
+Meta, GA4, Search Console. Vérifie aussi l'état **réel** du staging `testnico.maisonsavann.com`
+(lecture publique : accessible ? `robots.txt` et `noindex` toujours en place ? `llms.txt` servi ?
+nombre de pages au plan du site ?), sans rien écrire. Produis une **matrice de disponibilité des données** : pour chaque
 indicateur candidat (§6) : source, état (dispo / manuel / manquant / bloqué), fraîcheur, effort
 pour l'obtenir. Signale les anomalies (§1.1) et les définitions à confirmer.
 *Sortie : 10 lignes de synthèse à moi, pas un rapport.*
@@ -238,7 +269,8 @@ avec référence de départ et tendance, 3) explication (pourquoi), 4) recommand
 - **Étoile polaire** : emails collectés (compte, jamais les adresses), avec son entonnoir :
   portée → visites de profil → clics lien en bio → sessions site (GA4, UTM) → ajouts panier →
   emails / commandes. Chaque marche affiche son taux et **la marche qui fuit le plus**.
-  Référence de départ : 22 clics sur 30 jours, 0 email.
+  Référence de départ : 22 clics sur 30 jours, 0 email. Avant la bascule, les marches situées
+  après le clic sont **N/V pour la V2** (voir §0) et le cockpit le dit sans détour.
 - Tableau de bord des 4 disciplines (Instagram, SEO, AEO, GEO) : une note, une tendance, une
   fraîcheur, un feu (vert / orange / rouge) selon les seuils validés.
 - **Compte à rebours** de l'échéance (arrivage des Bolovens, mi-octobre, date exacte à me
@@ -279,9 +311,11 @@ avec référence de départ et tendance, 3) explication (pourquoi), 4) recommand
   liste d'objectifs de relations presse / annuaires.
 - **Accès des robots IA** : matrice des 10 robots (GPTBot, OAI-SearchBot, ChatGPT-User,
   ClaudeBot, PerplexityBot, Google-Extended, CCBot, Bingbot, Applebot-Extended,
-  Meta-ExternalAgent) × code HTTP × date de mesure, historique, alerte sur 429/403. Le test se
-  fait par un script à lancer en session (staging, et production selon l'amendement du
-  CLAUDE.md) et le résultat est déposé dans le cockpit.
+  Meta-ExternalAgent) × code HTTP × date de mesure × **environnement**, historique, alerte sur
+  429/403. Le test se fait par un script à lancer en session **sur le staging seulement** ;
+  le résultat est déposé dans le cockpit. La colonne « production » reste sur les valeurs
+  historiques du 29/09 (GPTBot 429) tant que je n'ai pas ouvert la production par écrit :
+  à la bascule, ce test devient la **vérification prioritaire du jour J**.
 - **Entité et autorité** : fiche Google Business Profile (nombre d'avis, note), `sameAs`,
   mentions tierces (compteur et liste), Wikidata (admissible oui / non, avec la règle), Google
   Alerts, liens entrants (Ahrefs Webmaster Tools). Objectif : sortir du **plafond GEO** dû à
@@ -329,6 +363,9 @@ remplit les tags) plutôt que d'improviser. Ne juge jamais une vidéo que tu n'a
   ceux qui ne le méritent pas.
 
 ## 5.6 SEO
+- **Sur la V2, l'onglet montre l'état de préparation** (staging fermé aux moteurs) : note
+  /8 et sous-notes, pages prêtes sur 27, balisage, canoniques, plan du site, vitesse mesurée
+  sur le staging. C'est **la préparation de la bascule** qui est suivie, pas un classement.
 - Search Console (quand la propriété est branchée, après la bascule) : impressions, clics, CTR
   et position **par grappe de requêtes** (Laos, Thaïlande, Vietnam, Indonésie, Asie générique,
   spécialité, robusta, drip bags, marque) ; requêtes gagnées et perdues ; pages qui piquent
@@ -341,9 +378,12 @@ remplit les tags) plutôt que d'improviser. Ne juge jamais une vidéo que tu n'a
   (`Organization`, `Product`, `FAQPage`, `Place`), Core Web Vitals mobile (LCP < 2,5 s,
   INP < 200 ms, CLS < 0,1) avec date de mesure, et la **définition du « terminé »** d'une page
   (les 9 cases du CLAUDE.md du site) sous forme de checklist par page.
-- Bascule : compte à rebours des gestes (indexation à rétablir, Search Console, IndexNow,
-  tag GA4 de la production à retrouver, `robots.txt` de production). Pendant qu'elle est
-  fermée, tout classement affiché est marqué **N/V**.
+- **Bascule** (V2 → maisonsavann.com, geste de Nicolas avec l'accord de son cousin, jamais
+  le tien) : checklist et compte à rebours des gestes (indexation à rétablir, Search Console,
+  IndexNow, tag Site Kit de la production à retrouver, `robots.txt` de production, robots IA
+  autorisés, redirections). Le cockpit **prépare le basculement de son propre paramètre
+  « site cible »** (§0) et liste ce qu'il faudra remesurer le jour J. Pendant que le site est
+  fermé, tout classement affiché est marqué **N/V**.
 
 ## 5.7 Moteur de recommandations et de gestion (transverse)
 Le cœur de l'outil. Deux couches :
@@ -400,7 +440,7 @@ date, cité, rang, sources, ton, capture), `acces_robot` (robot, date, environne
 « terminé »), `grappe` (requêtes, intention, page cible, concurrents), `mesure_seo` (date,
 grappe, impressions, clics, position), `indicateur_valeur` (indicateur, date, valeur, nature,
 source), `action` (statut, propriétaire, dates, avant / après), `experience`, `decision`.
-Chaque enregistrement garde sa **source** et sa **date de mesure**. Les imports (CSV Meta
+Chaque enregistrement garde sa **source**, sa **date de mesure** et, pour tout ce qui touche au site, son **environnement** (`staging` ou `production`), pour que la série survive à la bascule sans mélange. Les imports (CSV Meta
 Business Suite, Ads Manager, Search Console, fichiers du workspace) passent par une
 **couche d'import** qui valide les colonnes, signale les lignes rejetées et ne remplace jamais
 silencieusement une valeur.
@@ -448,10 +488,11 @@ en options concrètes avec ta recommandation.
    (emails, abonnés, clics), au format SMART ?
 4. Quels onglets, dans quel ordre de construction ? (Recommandé : Instagram → GEO → SEO → AEO →
    Actions.) L'écosystème (B2B, SureCart) : oui ou plus tard ?
-5. Lecture de `maisonsavann.com` : l'amendement actuel (fichiers `robots.txt`, `llms.txt`,
-   sitemaps, en-têtes, robots IA) suffit-il, ou autorises-tu par écrit une lecture publique
-   plus large pour des mesures récurrentes (balisage, vitesse, contenu des pages) ? Propose
-   le texte exact de l'amendement.
+5. Cible et bascule : le cockpit démarre sur `testnico.maisonsavann.com` (état de préparation,
+   pas de classement réel). Confirmes-tu que la production reste fermée jusqu'à la bascule ?
+   Quelle est la date visée de bascule, et veux-tu que le cockpit prévoie dès maintenant le
+   passage au site de production (paramètre « site cible ») ? Peux-tu me fournir un export
+   GA4 de la production pour avoir une référence avant V2 ?
 6. Sources réellement disponibles aujourd'hui : accès à Meta Business Suite (export par post,
    par reel) ? à Ads Manager ? Search Console (propriété, compte) ? GA4 (achat vérifié) ?
    Bing Webmaster ? Sais-tu où trouver chaque export ?
@@ -469,7 +510,7 @@ en options concrètes avec ta recommandation.
     outil vidéo) ?
 
 **Tour C, SEO / AEO / GEO**
-12. Date de la bascule du site et de l'arrivage des Bolovens (pour le compte à rebours) ?
+12. Date de l'arrivage des Bolovens et du drop (pour le compte à rebours ; la date de bascule est déjà demandée en 5) ?
 13. Le panel de 20 requêtes reste-t-il figé ? Qui remplit la grille chaque mois (30 min) ?
 14. Moteurs à suivre : ChatGPT, Perplexity, Gemini, AI Overviews, AI Mode, Copilot : tous, ou
     on commence par lesquels ? Clé Gemini gratuite disponible ou non ?
